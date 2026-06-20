@@ -1,6 +1,12 @@
 """Print Repo Guardian's review for a few representative diffs (manual demo)."""
 
 import asyncio
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService

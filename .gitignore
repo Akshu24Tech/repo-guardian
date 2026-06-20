@@ -205,3 +205,6 @@ tools/a2a-inspector/
 
 # Evaluation artifacts
 artifacts/
+
+# Generated docs
+docs/

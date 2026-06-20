@@ -139,7 +139,10 @@ class ReviewPipeline(BaseAgent):
     reviewer: BaseAgent
 
     def __init__(self, reviewer: BaseAgent, **kwargs):
-        super().__init__(
+        # `reviewer` is a declared Pydantic field; passing it through __init__ is
+        # valid at runtime. Type checkers read BaseAgent's base signature and flag
+        # it as unexpected, hence the ignore.
+        super().__init__(  # type: ignore
             name="repo_guardian",
             reviewer=reviewer,
             sub_agents=[reviewer],
@@ -196,6 +199,8 @@ class ReviewPipeline(BaseAgent):
         ctx.session.state["review_report"] = report.model_dump(mode="json")
 
         yield Event(
+            # invocation_id is required by the managed Vertex session service.
+            invocation_id=ctx.invocation_id,
             author=self.name,
             content=types.Content(
                 role="model",
