@@ -113,7 +113,7 @@ def _extract_diff(ctx: InvocationContext) -> str:
 
 
 def _format_report(report: ReviewReport) -> str:
-    lines = [f"## Repo Guardian — {report.verdict.value}", ""]
+    lines = [f"## Repo Guardian - {report.verdict.value}", ""]
     lines.append(f"**Why:** {report.rationale}")
     lines.append("")
     if report.vibe_diff:
@@ -163,14 +163,27 @@ class ReviewPipeline(BaseAgent):
             ctx.session.state["spec_criteria"] = SPEC_CRITERIA
             ctx.session.state["masked_diff"] = masked
 
-            async for _event in self.reviewer.run_async(ctx):
-                pass  # structured output lands in state via output_key
+            # Capture the reviewer's structured output directly from its event.
+            # (When a sub-agent runs inside an orchestrator and we don't re-yield
+            # its events, its output_key state delta is not committed for us.)
+            review_json = ""
+            async for ev in self.reviewer.run_async(ctx):
+                if ev.content and ev.content.parts:
+                    for part in ev.content.parts:
+                        if part.text:
+                            review_json = part.text
 
-            raw = ctx.session.state.get("conformance_raw")
-            if isinstance(raw, dict):
-                conformance = ConformanceReport.model_validate(raw)
-            elif isinstance(raw, ConformanceReport):
-                conformance = raw
+            if review_json.strip():
+                try:
+                    conformance = ConformanceReport.model_validate_json(review_json)
+                except ValueError:
+                    conformance = None
+            if conformance is None:
+                raw = ctx.session.state.get("conformance_raw")
+                if isinstance(raw, dict):
+                    conformance = ConformanceReport.model_validate(raw)
+                elif isinstance(raw, ConformanceReport):
+                    conformance = raw
 
         verdict, rationale = decide_verdict(findings, conformance)
         report = ReviewReport(
