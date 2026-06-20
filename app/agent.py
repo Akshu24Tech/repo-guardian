@@ -142,9 +142,9 @@ class ReviewPipeline(BaseAgent):
         # `reviewer` is a declared Pydantic field; passing it through __init__ is
         # valid at runtime. Type checkers read BaseAgent's base signature and flag
         # it as unexpected, hence the ignore.
-        super().__init__(  # type: ignore
+        super().__init__(
             name="repo_guardian",
-            reviewer=reviewer,
+            reviewer=reviewer,  # pyrefly: ignore  # declared Pydantic field, valid at runtime
             sub_agents=[reviewer],
             **kwargs,
         )
