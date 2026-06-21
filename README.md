@@ -1,6 +1,6 @@
 # Repo Guardian
 
-An agentic code reviewer built with **Google ADK 2.0**. Point it at a diff and it
+An agentic code reviewer built with **Google ADK**. Point it at a diff and it
 reviews the change against a written spec, screens it for security risks **before**
 any LLM reasoning, writes a plain-English summary, and returns one of four verdicts
 — never auto-approving anything dangerous.
