@@ -1,0 +1,14 @@
+# For teams that use the `pre-commit` framework (pip install pre-commit).
+#   pre-commit install      # wires it into .git/hooks automatically
+#
+# This runs Repo Guardian's fast deterministic screen (no LLM) on every commit.
+# The full agentic review (spec conformance + verdict) belongs at pre-push / CI.
+repos:
+  - repo: local
+    hooks:
+      - id: repo-guardian-scan
+        name: Repo Guardian (secret / injection screen)
+        entry: uv run python hooks/precommit_scan.py
+        language: system
+        pass_filenames: false
+        always_run: true

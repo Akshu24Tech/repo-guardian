@@ -1,0 +1,16 @@
+#!/bin/sh
+# Repo Guardian pre-commit hook — fast deterministic security screen.
+# Installed by: sh hooks/install.sh   (copies this into .git/hooks/pre-commit)
+#
+# Runs only the no-LLM scan so it stays well under the "keep it fast" budget.
+# Blocks on hardcoded secrets and prompt-injection text in the staged diff.
+
+# Resolve the repo root so the hook works regardless of CWD.
+ROOT="$(git rev-parse --show-toplevel)"
+
+# Prefer uv (the project's runner); fall back to plain python.
+if command -v uv >/dev/null 2>&1; then
+    uv run --project "$ROOT" python "$ROOT/hooks/precommit_scan.py"
+else
+    PYTHONPATH="$ROOT" python "$ROOT/hooks/precommit_scan.py"
+fi

@@ -69,6 +69,33 @@ git diff | uv run python review.py
 uv run python review.py --git
 ```
 
+### Run it as a git hook (defense in depth)
+
+Repo Guardian is a code reviewer, so make it a *gate*, not just a command. It runs
+at two depths — fast and deterministic on the way in, full and agentic before it
+leaves your machine:
+
+```bash
+# install the fast pre-commit screen (no LLM, no cloud — sub-second)
+sh hooks/install.sh
+```
+
+| Stage | What runs | Speed | Blocks on |
+|-------|-----------|-------|-----------|
+| **pre-commit** | deterministic screen only (`hooks/precommit_scan.py`) | < 1s, no creds | hardcoded secret, prompt-injection text |
+| **pre-push / CI** | the full agent (`review.py --gate`) | a model call | `REQUEST_CHANGES`, `NEEDS_HUMAN_REVIEW` |
+
+The pre-commit hook deliberately skips the LLM: a secret screen must be fast enough
+that nobody reaches for `--no-verify`. The deeper spec-conformance review, which
+costs a model call, belongs at pre-push or in CI:
+
+```bash
+git diff origin/main...HEAD | uv run python review.py --gate   # exit 1 fails the push/CI step
+```
+
+Teams on the [`pre-commit`](https://pre-commit.com) framework can use the bundled
+`.pre-commit-config.yaml` instead — `pre-commit install` wires it in automatically.
+
 ### See the three headline cases
 
 ```bash
